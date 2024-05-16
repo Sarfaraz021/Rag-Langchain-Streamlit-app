@@ -21,10 +21,13 @@ class RAGAssistant:
     def __init__(self):
         self.load_env_variables()
         self.setup_prompt_template()
+        self.relative_path = 'templates'
+        self.filename = 'demo.txt'
+        self.absolute_path = os.path.join(self.relative_path, self.filename)
         self.retriever = None  # Define retriever as an instance variable
-        default_documents_directory = r"D:\DanyAIApp\code\data\dummy.txt"
-        self.initialize_retriever(default_documents_directory)
-        self.llm = ChatOpenAI(model="gpt-4-turbo-preview", temperature=0.9)
+        # default_documents_directory = r"D:\DanyAIApp\code\data\dummy.txt"
+        self.initialize_retriever(self.absolute_path)
+        self.llm = ChatOpenAI(model="gpt-4o", temperature=0.9)
 
     def load_env_variables(self):
         """Loads environment variables from .env file."""
