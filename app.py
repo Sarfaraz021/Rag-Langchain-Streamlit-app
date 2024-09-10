@@ -12,7 +12,6 @@ from langchain_pinecone import PineconeVectorStore
 from pinecone import Pinecone
 from prompt import template
 
-
 class RAGAssistant:
     def __init__(self):
         self.load_env_variables()
@@ -22,7 +21,11 @@ class RAGAssistant:
         self.absolute_path = os.path.join(self.relative_path, self.filename)
         self.retriever = None
         self.initialize_retriever(self.absolute_path)
-        self.llm = ChatOpenAI(model="gpt-4o", temperature=0.9)
+        self.llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.7)
+
+        # Initialize memory in Streamlit session state
+        if 'memory' not in st.session_state:
+            st.session_state.memory = ConversationBufferMemory(memory_key="history", input_key="question")
 
     def load_env_variables(self):
         load_dotenv('var.env')
@@ -40,7 +43,7 @@ class RAGAssistant:
         loader = TextLoader(directory_path)
         documents = loader.load()
         text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=10000, chunk_overlap=200)
+            chunk_size=1000, chunk_overlap=200)
         docs = text_splitter.split_documents(documents)
         embeddings = OpenAIEmbeddings()
         Pinecone(api_key=self.pinecone_api_key, environment='gcp-starter')
@@ -69,7 +72,7 @@ class RAGAssistant:
 
     def process_documents(self, documents):
         text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=10000, chunk_overlap=200)
+            chunk_size=1000, chunk_overlap=200)
         docs = text_splitter.split_documents(documents)
         embeddings = OpenAIEmbeddings()
         Pinecone(api_key=self.pinecone_api_key, environment='gcp-starter')
@@ -82,25 +85,29 @@ class RAGAssistant:
             llm=self.llm,
             chain_type='stuff',
             retriever=self.retriever,
-            chain_type_kwargs={"verbose": False, "prompt": self.prompt_template,
-                               "memory": ConversationBufferMemory(memory_key="history", input_key="question")}
+            chain_type_kwargs={
+                "verbose": False, 
+                "prompt": self.prompt_template,
+                "memory": st.session_state.memory  # Use the memory from session state
+            }
         )
         assistant_response = chain.invoke(user_input)
         response_text = assistant_response['result']
 
         return response_text
 
-
+# Initialize the RAG Assistant
 rag_assistant = RAGAssistant()
 
+# Streamlit UI setup
 st.set_page_config(page_title="Dany Assistant", layout="wide")
-
 st.title("RAG Assistant")
 
-# Initialize session state
+# Initialize session state for messages if not already done
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+# Sidebar for choosing between Chat and Fine-tuning
 option = st.sidebar.selectbox("Choose an option", ("Chat", "Fine-tuning"))
 
 if option == "Chat":
@@ -119,8 +126,7 @@ if option == "Chat":
 
         # Generate assistant response
         response = rag_assistant.chat(prompt)
-        st.session_state.messages.append(
-            {"role": "assistant", "content": response})
+        st.session_state.messages.append({"role": "assistant", "content": response})
 
         with st.chat_message("assistant"):
             st.markdown(response)
@@ -138,5 +144,4 @@ elif option == "Fine-tuning":
             f.write(uploaded_file.getbuffer())
         with st.spinner("Fine-tuning in progress..."):
             rag_assistant.finetune(file_path)
-        st.success(
-            "Fine-tuning done successfully. You can now chat with the updated RAG Assistant.")
+        st.success("Fine-tuning done successfully. You can now chat with the updated RAG Assistant.")
