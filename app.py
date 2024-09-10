@@ -8,9 +8,9 @@ from langchain.prompts.prompt import PromptTemplate
 from langchain.chains import RetrievalQA
 from langchain.memory import ConversationBufferMemory
 from langchain_community.document_loaders import Docx2txtLoader, UnstructuredExcelLoader, CSVLoader, TextLoader, PyPDFLoader
-from langchain_pinecone import PineconeVectorStore
+# from langchain_pinecone import PineconeVectorStore
 from langchain_chroma import Chroma
-from pinecone import Pinecone
+# from pinecone import Pinecone
 from prompt import template
 
 class RAGAssistant:
@@ -18,7 +18,7 @@ class RAGAssistant:
         self.load_env_variables()
         self.setup_prompt_template()
         self.relative_path = 'templates'
-        self.filename = 'demo.txt'
+        self.filename = 'doc.pdf'
         self.absolute_path = os.path.join(self.relative_path, self.filename)
         self.retriever = None
         self.initialize_retriever(self.absolute_path)
@@ -41,7 +41,7 @@ class RAGAssistant:
         )
 
     def initialize_retriever(self, directory_path):
-        loader = TextLoader(directory_path)
+        loader = PyPDFLoader(directory_path)
         documents = loader.load()
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000, chunk_overlap=200)
