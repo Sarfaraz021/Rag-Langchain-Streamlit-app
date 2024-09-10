@@ -100,8 +100,8 @@ class RAGAssistant:
 rag_assistant = RAGAssistant()
 
 # Streamlit UI setup
-st.set_page_config(page_title="Dany Assistant", layout="wide")
-st.title("RAG Assistant")
+st.set_page_config(page_title="Tamer Assistant", layout="wide")
+st.title("Tamer RAG Assistant")
 
 # Initialize session state for messages if not already done
 if "messages" not in st.session_state:
