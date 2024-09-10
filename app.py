@@ -9,6 +9,7 @@ from langchain.chains import RetrievalQA
 from langchain.memory import ConversationBufferMemory
 from langchain_community.document_loaders import Docx2txtLoader, UnstructuredExcelLoader, CSVLoader, TextLoader, PyPDFLoader
 from langchain_pinecone import PineconeVectorStore
+from langchain_chroma import Chroma
 from pinecone import Pinecone
 from prompt import template
 
@@ -30,8 +31,8 @@ class RAGAssistant:
     def load_env_variables(self):
         load_dotenv('var.env')
         self.openai_api_key = os.getenv('OPENAI_API_KEY')
-        self.pinecone_api_key = os.getenv("PINECONE_API_KEY")
-        self.pinecone_index_name = os.getenv("PINECONE_INDEX_NAME")
+        # self.pinecone_api_key = os.getenv("PINECONE_API_KEY")
+        # self.pinecone_index_name = os.getenv("PINECONE_INDEX_NAME")
 
     def setup_prompt_template(self):
         self.prompt_template = PromptTemplate(
@@ -46,9 +47,9 @@ class RAGAssistant:
             chunk_size=1000, chunk_overlap=200)
         docs = text_splitter.split_documents(documents)
         embeddings = OpenAIEmbeddings()
-        Pinecone(api_key=self.pinecone_api_key, environment='gcp-starter')
-        vectbd = PineconeVectorStore.from_documents(
-            docs, embeddings, index_name=self.pinecone_index_name)
+        # Pinecone(api_key=self.pinecone_api_key, environment='gcp-starter')
+        vectbd = Chroma.from_documents(
+            docs, embeddings)
         self.retriever = vectbd.as_retriever()
 
     def finetune(self, file_path):
@@ -75,9 +76,9 @@ class RAGAssistant:
             chunk_size=1000, chunk_overlap=200)
         docs = text_splitter.split_documents(documents)
         embeddings = OpenAIEmbeddings()
-        Pinecone(api_key=self.pinecone_api_key, environment='gcp-starter')
-        vectbd = PineconeVectorStore.from_documents(
-            docs, embeddings, index_name=self.pinecone_index_name)
+        # Pinecone(api_key=self.pinecone_api_key, environment='gcp-starter')
+        vectbd = Chroma.from_documents(
+            docs, embeddings)
         self.retriever = vectbd.as_retriever()
 
     def chat(self, user_input):
