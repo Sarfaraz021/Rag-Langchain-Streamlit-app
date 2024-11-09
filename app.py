@@ -13,6 +13,7 @@ from langchain_chroma import Chroma
 # from pinecone import Pinecone
 from prompt import template
 
+
 class RAGAssistant:
     def __init__(self):
         self.load_env_variables()
@@ -26,7 +27,8 @@ class RAGAssistant:
 
         # Initialize memory in Streamlit session state
         if 'memory' not in st.session_state:
-            st.session_state.memory = ConversationBufferMemory(memory_key="history", input_key="question")
+            st.session_state.memory = ConversationBufferMemory(
+                memory_key="history", input_key="question")
 
     def load_env_variables(self):
         load_dotenv('var.env')
@@ -87,7 +89,7 @@ class RAGAssistant:
             chain_type='stuff',
             retriever=self.retriever,
             chain_type_kwargs={
-                "verbose": False, 
+                "verbose": False,
                 "prompt": self.prompt_template,
                 "memory": st.session_state.memory  # Use the memory from session state
             }
@@ -97,12 +99,13 @@ class RAGAssistant:
 
         return response_text
 
+
 # Initialize the RAG Assistant
 rag_assistant = RAGAssistant()
 
 # Streamlit UI setup
-st.set_page_config(page_title="Tamer Assistant", layout="wide")
-st.title("Tamer RAG Assistant")
+st.set_page_config(page_title="Assistant", layout="wide")
+st.title("RAG Assistant")
 
 # Initialize session state for messages if not already done
 if "messages" not in st.session_state:
@@ -127,7 +130,8 @@ if option == "Chat":
 
         # Generate assistant response
         response = rag_assistant.chat(prompt)
-        st.session_state.messages.append({"role": "assistant", "content": response})
+        st.session_state.messages.append(
+            {"role": "assistant", "content": response})
 
         with st.chat_message("assistant"):
             st.markdown(response)
@@ -145,4 +149,5 @@ elif option == "Fine-tuning":
             f.write(uploaded_file.getbuffer())
         with st.spinner("Fine-tuning in progress..."):
             rag_assistant.finetune(file_path)
-        st.success("Fine-tuning done successfully. You can now chat with the updated RAG Assistant.")
+        st.success(
+            "Fine-tuning done successfully. You can now chat with the updated RAG Assistant.")
